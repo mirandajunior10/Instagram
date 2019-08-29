@@ -1,7 +1,8 @@
 import React from 'react';
 import { FlatList, StyleSheet, Text, View, Image } from 'react-native';
 import { f, auth, database, storage } from '../../config/config';
-
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from "date-fns/locale"
 class Feed extends React.Component {
     constructor(props) {
         super(props);
@@ -18,33 +19,49 @@ class Feed extends React.Component {
     }
 
     async loadFeed() {
-
+        //define o state pra refresh: true e esvazia o vetor photo_feed
         this.setState({
             refresh: true,
             photo_feed: []
         });
-
+        //guarda o escopo da função, para atualizar o state mais tarde
         var that = this;
 
         try {
+            //snapshot guarda a informação requisitada pelo banco de dados (todas as fotos do storage, nesse caso)
             const snapshot = await database.ref('photos').orderByChild('posted').once('value');
             const exists = (snapshot.val() != null);
             if (exists) data = snapshot.val();
+            else console.log("Sem retorno");
+            //console.log(data);
 
+            //atualiza o state usando a variável that
             var photo_feed = that.state.photo_feed;
 
+            //photo aqui não é o indice, como data é um array de objeto, a variável photo guarda o nome do objeto em cada índice
             for (var photo in data) {
+                //mostra no console as informações de cada objeto --Dev only :)
+                console.log(photo);
+                //guarda em photoObj, o objeto com o nome da variável photo no array data
                 var photoObj = data[photo];
+
+                //depois de obtida a foto, o próximo try é feito para buscar as informações do usuário que o app mostrará na tela
                 try {
                     const snapshot = await database.ref('users').child(photoObj.author).once('value');
                     const exists = (snapshot.val() != null);
                     if (exists) data = snapshot.val();
+                    //mostra no console as informações de cada objeto --Dev only :)
+                    console.log(photo);
 
                     photo_feed.push({
                         id: photo,
                         url: photoObj.url,
                         caption: photoObj.caption,
-                        posted: photoObj.posted,
+                        posted: formatDistanceToNow(new Date(photoObj.posted * 1000), {
+                            includeSeconds: true,
+                            //locale: ptBR,
+                            addSuffix: true
+                        }),
                         author: data.username
                     });
 
@@ -54,6 +71,7 @@ class Feed extends React.Component {
 
                     });
                 } catch (error) {
+
                     console.log(error);
                 }
             }
@@ -66,6 +84,45 @@ class Feed extends React.Component {
     loadNew = () => {
         this.loadFeed();
     }
+
+    pluralCheck(s) {
+        if (s == 1) {
+            return ' ago';
+        }
+        else return 's ago'
+    }
+    timeConverter(timestamp) {
+        var a = new Date(timestamp * 1000);
+        var seconds = Math.floor(new Date() - a / 1000);
+
+        var interval = Math.floor(seconds / 31536000);
+
+        if (interval > 1) {
+            return interval + 'year' + this.pluralCheck(interval)
+        }
+
+        interval = Math.floor(seconds / 2592000);
+        if (interval > 1) {
+            return interval + 'month' + this.pluralCheck(interval)
+        }
+
+        interval = Math.floor(seconds / 86400);
+        if (interval > 1) {
+            return interval + 'day' + this.pluralCheck(interval)
+        }
+
+        interval = Math.floor(seconds / 3600);
+        if (interval > 1) {
+            return interval + 'hour' + this.pluralCheck(interval)
+        }
+
+        interval = Math.floor(seconds / 60);
+        if (interval > 1) {
+            return interval + 'minute' + this.pluralCheck(interval)
+        }
+        return seconds + 'minute' + this.pluralCheck(interval)
+    }
+
 
     render() {
         return (
@@ -88,15 +145,15 @@ class Feed extends React.Component {
                             renderItem={({ item, index }) => (
                                 <View key={index} style={styles.post}>
                                     <View style={styles.post_header}>
-                                        <Text>Time ago</Text>
-                                        <Text>@Rusty</Text>
+                                        <Text>{item.posted}</Text>
+                                        <Text>{item.author}</Text>
                                     </View>
                                     <View>
                                         <Image source={{ uri: item.url }}
                                             style={styles.image} />
                                     </View>
                                     <View style={styles.caption_comment}>
-                                        <Text>Caption teste here</Text>
+                                        <Text>{item.capt}</Text>
                                         <Text style={styles.comment}>View Comments</Text>
                                     </View>
                                 </View>
@@ -167,7 +224,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         textAlign: 'center'
     },
-    loading:{
+    loading: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center'
