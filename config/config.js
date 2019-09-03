@@ -5,7 +5,7 @@ const firebaseConfig = {
     authDomain: "instagram-d89e3.firebaseapp.com",
     databaseURL: "https://instagram-d89e3.firebaseio.com",
     projectId: "instagram-d89e3",
-    storageBucket: "",
+    storageBucket: "instagram-d89e3.appspot.com",
     messagingSenderId: "390298799165",
     appId: "1:390298799165:web:dfcdd277fe8d7751"
   };

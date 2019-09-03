@@ -1,8 +1,8 @@
 import React from 'react';
-import { FlatList, StyleSheet, Text, View, Image } from 'react-native';
+import { TouchableOpacity, FlatList, StyleSheet, Text, View, Image } from 'react-native';
 import { f, auth, database, storage } from '../../config/config';
 import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from "date-fns/locale"
+//import { ptBR } from "date-fns/locale"
 class Feed extends React.Component {
     constructor(props) {
         super(props);
@@ -47,11 +47,11 @@ class Feed extends React.Component {
 
                 //depois de obtida a foto, o próximo try é feito para buscar as informações do usuário que o app mostrará na tela
                 try {
-                    const snapshot = await database.ref('users').child(photoObj.author).once('value');
+                    const snapshot = await database.ref('users').child(photoObj.author).child('username').once('value');
                     const exists = (snapshot.val() != null);
                     if (exists) data = snapshot.val();
                     //mostra no console as informações de cada objeto --Dev only :)
-                    console.log(photo);
+                    //console.log(photo);
 
                     photo_feed.push({
                         id: photo,
@@ -62,7 +62,8 @@ class Feed extends React.Component {
                             //locale: ptBR,
                             addSuffix: true
                         }),
-                        author: data.username
+                        author: data,
+                        authorID: photoObj.author
                     });
 
                     that.setState({
@@ -146,15 +147,26 @@ class Feed extends React.Component {
                                 <View key={index} style={styles.post}>
                                     <View style={styles.post_header}>
                                         <Text>{item.posted}</Text>
-                                        <Text>{item.author}</Text>
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                this.props.navigation.navigate('User', { userID: item.authorID })
+                                            }}>
+                                            <Text>{item.author}</Text>
+                                        </TouchableOpacity>
+
                                     </View>
                                     <View>
                                         <Image source={{ uri: item.url }}
                                             style={styles.image} />
                                     </View>
-                                    <View style={styles.caption_comment}>
+                                    <View style={styles.comment_view}>
                                         <Text>{item.capt}</Text>
-                                        <Text style={styles.comment}>View Comments</Text>
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                this.props.navigation.navigate('Comments', { userID: item.id })
+                                            }}>
+                                            <Text style={styles.comment_button}>[ View Comments ] </Text>
+                                        </TouchableOpacity>
                                     </View>
                                 </View>
                             )}
@@ -217,10 +229,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between'
     },
-    caption_comment: {
+    comment_view: {
         padding: 5
     },
-    comment: {
+    comment_button: {
+        color: 'blue',
         marginTop: 10,
         textAlign: 'center'
     },
