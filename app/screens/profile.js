@@ -1,6 +1,7 @@
 import React from 'react';
-import { f, auth, database, storage } from '../../config/config';
-import { TouchableOpacity, FlatList, StyleSheet, Text, View, Image } from 'react-native';
+import { f } from '../../config/config';
+import { TouchableOpacity, StyleSheet, Text, View, Image } from 'react-native';
+import PhotoList from '../Components/PhotoList';
 
 class Profile extends React.Component {
     constructor(props) {
@@ -16,7 +17,8 @@ class Profile extends React.Component {
             if (user) {
                 //Logged in
                 this.setState({
-                    loggedin: true
+                    loggedin: true,
+                    userID: user.uid
                 });
             } else {
                 //not logged ing
@@ -52,15 +54,15 @@ class Profile extends React.Component {
                                 <Text style={styles.buttonText}>Edit profile</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.buttonAddNew}
-                            onPress={() =>{
-                                console.log(this.props.navigation.navigate('Upload'));
-                            }}>
+                                onPress={() => {
+                                    console.log(this.props.navigation.navigate('Upload'));
+                                }}>
                                 <Text style={styles.buttonAddNewText}>Upload new +</Text>
                             </TouchableOpacity>
                         </View>
-                        <View style={styles.profilePhotos}>
-                            <Text>Loading photos...</Text>
-                        </View>
+
+                        <PhotoList isUser={true} userID={this.state.userID} navigation={this.props.navigation}></PhotoList>
+
                     </View>
                 ) : (
                         <View style={styles.viewOffline}>
@@ -125,35 +127,35 @@ const styles = StyleSheet.create({
         paddingBottom: 20,
         borderBottomWidth: 1,
     },
-    button:{
-        marginTop:10,
+    button: {
+        marginTop: 10,
         marginHorizontal: 40,
         paddingVertical: 15,
-        borderRadius:20,
-        borderColor:'grey',
+        borderRadius: 20,
+        borderColor: 'grey',
         borderWidth: 1.5
     },
-    buttonText:{
-        textAlign:'center',
-        color:'grey'
+    buttonText: {
+        textAlign: 'center',
+        color: 'grey'
     },
-    buttonAddNew:{
-        marginTop:10,
+    buttonAddNew: {
+        marginTop: 10,
         marginHorizontal: 40,
         paddingVertical: 35,
-        borderRadius:20,
-        borderColor:'grey',
+        borderRadius: 20,
+        borderColor: 'grey',
         borderWidth: 1.5,
         backgroundColor: 'grey',
     },
-    buttonAddNewText:{
-        textAlign:'center',
-        color:'white'
+    buttonAddNewText: {
+        textAlign: 'center',
+        color: 'white'
     },
-    profilePhotos:{
+    profilePhotos: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor:'green'
+        backgroundColor: 'green'
     }
 });

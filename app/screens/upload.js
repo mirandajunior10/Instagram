@@ -1,5 +1,5 @@
 import React from 'react';
-import { f, auth, database, storage } from '../../config/config';
+import { f, database, storage } from '../../config/config';
 import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Permissions from 'expo-permissions';
@@ -9,11 +9,7 @@ class Upload extends React.Component {
         super(props);
         this.state = {
             loggedin: false,
-            imageID: this.uniqueID(),
-            imageSelected: false,
-            uploading: false,
-            caption: '',
-            progress: 0
+           comments_list:[]
         }
     }
 
@@ -48,11 +44,9 @@ class Upload extends React.Component {
             console.log('Upload image');
             this.setState({
                 imageSelected: true,
-
                 imageID: this.uniqueID(),
                 uri: result.uri
             })
-            console.log('Uploading', this.state.uploading);
         } else {
             console.log('cancelled');
             this.setState({
@@ -60,13 +54,20 @@ class Upload extends React.Component {
             });
         }
     }
+
     uploadPublish() {
-        if (this.state.caption != '') {
-            this.uploadImage(this.state.uri);
+        if (!this.state.uploading) {
+            if (this.state.caption != '') {
+                this.uploadImage(this.state.uri);
+                //this.setState({uploading: false});
+            } else {
+                alert('please enter a caption...');
+            }
         } else {
-            alert('please enter a caption...');
+            console.log('Ignore button tap as already uploading')
         }
     }
+
     async uploadImage(uri) {
         var that = this;
         var userID = f.auth().currentUser.uid;
@@ -95,15 +96,53 @@ class Upload extends React.Component {
             try {
                 const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
                 console.log(downloadURL);
-                alert(downloadURL);
+                that.processUpload(downloadURL);
             } catch (error) {
                 console.log(error)
             }
 
+        });
+
+
+    }
+
+    processUpload(imageURL) {
+        //Process here...
+
+        var userID = f.auth().currentUser.uid;
+        var date = Date.now();
+        var caption = this.state.caption;
+        var timestamp = Math.floor(date / 1000);
+        var imageID = this.state.imageID;
+
+        //Build photo object
+        //author, caption, posted,url
+
+        var photoObj = {
+            author: userID,
+            caption: caption,
+            posted: timestamp,
+            uri: imageURL
+        };
+
+        //Update database
+
+        //Add to main feed
+        database.ref('/photos/' + imageID).set(photoObj);
+
+        //Set user photos object
+        var ref = '/users/' + userID + '/photos/' + imageID;
+        console.log(ref)
+        database.ref('/users/' + userID + '/photos/' + imageID).set(photoObj);
+
+        alert('Image uploaded');
+        this.setState({
+            uploading: false,
+            imageSelected: false,
+            caption: '',
+            url: '',
+
         })
-        // var snapshot = uploadTask.put(blob).on('state_changed', snapshot => {
-        //     console.log('Progress', snapshot.bytesTransferred, snapshot.totalBytes);
-        // });
     }
 
     componentDidMount() {

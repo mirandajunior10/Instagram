@@ -1,7 +1,7 @@
 import React from 'react';
 import { f, auth, database, storage } from '../../config/config';
 import { TouchableOpacity, FlatList, StyleSheet, Text, View, Image } from 'react-native';
-
+import PhotoList from '../Components/PhotoList';
 class Profile extends React.Component {
     constructor(props) {
         super(props);
@@ -59,7 +59,7 @@ class Profile extends React.Component {
         return (
             <View style={styles.viewOnline}>
                 {this.state.loaded == false ? (
-                    <View style={styles.viewOnline}>
+                    <View style={styles.viewOffline}>
                         <Text>Loading...</Text>
                     </View>
                 ) : (
@@ -81,9 +81,8 @@ class Profile extends React.Component {
                                     <Text>{this.state.username}</Text>
                                 </View>
                             </View>
-                            <View style={styles.profilePhotos}>
-                                <Text>Loading photos...</Text>
-                            </View>
+                            <PhotoList isUser={true} userID={this.state.userID} navigation={this.props.navigation}></PhotoList>
+
                         </View>
                     )}
 
@@ -127,7 +126,7 @@ const styles = StyleSheet.create({
     headerItems: {
         width: 100,
     },
-    goBack:{
+    goBack: {
         fontSize: 12,
         fontWeight: 'bold',
         paddingLeft: 10
