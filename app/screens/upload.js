@@ -3,6 +3,7 @@ import { f, database, storage } from '../../config/config';
 import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Permissions from 'expo-permissions';
+import UserAuth from '../Components/auth';
 
 class Upload extends React.Component {
     constructor(props) {
@@ -158,6 +159,7 @@ class Upload extends React.Component {
                 this.setState({
                     loggedin: false
                 });
+                
             }
         });
     }
@@ -222,10 +224,7 @@ class Upload extends React.Component {
                             )}
                     </View>
                 ) : (
-                        <View style={styles.logged_out}>
-                            <Text>You are not logged in</Text>
-                            <Text>Please log in to upload a photo.</Text>
-                        </View>
+                        <UserAuth message={'Please log in to upload a photo.'}/>
 
                     )}
 

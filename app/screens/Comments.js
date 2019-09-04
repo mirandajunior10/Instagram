@@ -1,10 +1,10 @@
 import React from 'react';
-import { f, auth, database, storage } from '../../config/config';
-import { FlatList, StyleSheet, Text, View, Image, TouchableOpacity, KeyboardAvoidingView , TextInput} from 'react-native';
+import { f, database } from '../../config/config';
+import { FlatList, StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView , TextInput} from 'react-native';
 import { formatDistanceToNow } from 'date-fns';
+import UserAuth from '../Components/auth'
 
-
-class Upload extends React.Component {
+class Comments extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -204,10 +204,8 @@ class Upload extends React.Component {
                         </View>
                     </KeyboardAvoidingView>
                     ) : (
-                        <View>
-                            <Text>You are not logged in</Text>
-                            <Text>Please log in to post a comment.</Text>
-                        </View>
+                        <UserAuth navigation={this.props.navigation} moveScreen={true} message={'Please log in to post a comment.'}/>
+
 
                     )}
 
@@ -215,7 +213,7 @@ class Upload extends React.Component {
     }
 }
 
-export default Upload;
+export default Comments;
 
 const styles = StyleSheet.create({
     view: {

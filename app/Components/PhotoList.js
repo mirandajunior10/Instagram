@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, FlatList, StyleSheet, Text, View, Image } from 'react-native';
-import {database} from '../../config/config';
+import { database } from '../../config/config';
 import { formatDistanceToNow } from 'date-fns';
 
 class PhotoList extends React.Component {
@@ -10,7 +10,8 @@ class PhotoList extends React.Component {
         this.state = {
             photo_feed: [],
             refresh: false,
-            loading: true
+            loading: true,
+            empty: false
         }
     }
 
@@ -88,10 +89,12 @@ class PhotoList extends React.Component {
                     //locale: ptBR,
                     addSuffix: true
                 }),
+                timestamp:photoObj.posted,
                 author: data,
                 authorID: photoObj.author
             });
 
+            var myData = [].concat(photo_feed).sort((a,b) => a.timestamp < b.timestamp);
             that.setState({
                 refresh: false,
                 loading: false,
@@ -113,31 +116,42 @@ class PhotoList extends React.Component {
         //guarda o escopo da função, para atualizar o state mais tarde
         var that = this;
 
+
         try {
-            console.log('Feed');
+            //console.log(userID);
+            //console.log('Feed');
+
             var loadRef = database.ref('photos');
             if (userID != '') {
                 loadRef = database.ref('users').child(userID).child('photos');
             }
-            console.log(loadRef);
+            //console.log(loadRef);
 
             //snapshot guarda a informação requisitada pelo banco de dados (todas as fotos do storage, nesse caso)
             const snapshot = await loadRef.orderByChild('posted').once('value');
             //console.log(snapshot);
             const exists = (snapshot.val() != null);
-            if (exists) data = snapshot.val();
-            else console.log("Sem retorno");
+            if (exists) {
+                this.setState({ empty: false })
+                data = snapshot.val()
+                //atualiza o state usando a variável that
+                var photo_feed = that.state.photo_feed;
+
+                //photo aqui não é o indice, como data é um array de objeto, a variável photo guarda o nome do objeto em cada índice
+                for (var photo in data) {
+
+                    that.addToFlatList(photo_feed, data, photo)
+                }
+
+            } else {
+                this.setState({ empty: true })
+
+            }
             //console.log(data);
 
-            //atualiza o state usando a variável that
-            var photo_feed = that.state.photo_feed;
 
-            //photo aqui não é o indice, como data é um array de objeto, a variável photo guarda o nome do objeto em cada índice
-            for (var photo in data) {
-                that.addToFlatList(photo_feed, data, photo)
-            }
-            console.log(photo_feed);
-            console.log(that.state.photo_feed);
+            //console.log(photo_feed);
+            //console.log(that.state.photo_feed);
 
         } catch (error) {
             console.log(error);
@@ -161,8 +175,15 @@ class PhotoList extends React.Component {
             <View style={styles.view}>
 
                 {this.state.loading == true ? (
+
                     <View style={styles.loading}>
-                        <Text>Loading</Text>
+                        {this.state.empty == true ? (
+                            <Text>No photos found</Text>
+
+                        ) : (
+                                <Text>Loading</Text>
+                            )}
+
                     </View>
                 ) : (
                         <FlatList

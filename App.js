@@ -1,9 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { createStackNavigator, createBottomTabNavigator } from 'react-navigation';
+import {createAppContainer} from 'react-navigation';
+import {createStackNavigator} from 'react-navigation-stack';
+import {createBottomTabNavigator} from 'react-navigation-tabs';
 import { YellowBox } from 'react-native';
 import _ from 'lodash';
-import { f, auth, database, storage } from './config/config';
 
 import Feed from './app/screens/Feed';
 import Upload from './app/screens/Upload';
@@ -37,37 +37,19 @@ const MainStack = createStackNavigator({
     headerMode: 'none',
 
   })
-
+const AppContainer = createAppContainer(MainStack);
 export default class App extends React.Component {
 
-  async login() {
-    //Force user to login
-    try {
-      let user = await auth.signInWithEmailAndPassword('test@user.com', 'password');
-
-
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  
 
   constructor(props) {
     super(props);
-    this.login();
+    //this.login();
   }
 
   render() {
     return (
-      <MainStack />
+      <AppContainer />
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
