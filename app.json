@@ -26,6 +26,7 @@
     "ios": {
       "supportsTablet": true
     },
-    "description": ""
+    "description": "A simple clone from Instagram at it's early stages.",
+    "githubUrl": "https://github.com/mirandajunior10/Instagram"
   }
 }
